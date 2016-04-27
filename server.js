@@ -1,3 +1,8 @@
+// C : Create
+// R : Read
+// U : Update
+// D : Delete
+
 var express = require('express');
 var bodyParser = require('body-parser');
 var _ = require('underscore');
@@ -44,6 +49,18 @@ app.post('/todos', function (req, res) {
 	todos.push(body);
 
 	res.json(body);
+});
+
+app.delete('/todos/:id', function (req, res) {
+	var todoId = parseInt(req.params.id, 10);
+	var matchedTodo = _.findWhere(todos, {id: todoId});
+
+	if (matchedTodo) {
+		todos = _.without(todos, matchedTodo);
+		res.json(matchedTodo);
+	} else {
+		res.status(404).json({"error": "No todo found with that id"});
+	}
 });
 
 
