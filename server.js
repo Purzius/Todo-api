@@ -21,40 +21,67 @@ app.get('/', function(req, res) {
 
 // get todos?complated=bool&q=description
 app.get('/todos', function(req, res) {
-	var queryParams = req.query;
-	var filteredTodos = todos;
+	var query = req.query;
+	var where = {};
 
-	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {
-			completed: true
-		});
-	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {
-			completed: false
-		});
+	if (query.hasOwnProperty('completed') && query.completed === 'true') {
+		where.completed = true;
+	} else if (query.hasOwnProperty('completed') && query.completed === 'false') {
+		where.completed = false;
 	}
 
-	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-		filteredTodos = _.filter(filteredTodos, function(obj) {
-			return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) >= 0;
-		});
+	if (query.hasOwnProperty('q') && query.q.length > 0) {
+		where.description = {
+			$like: '%' + query.q + '%'
+		};
 	}
 
-	// convert to JSON and send back to who called it
-	res.json(filteredTodos);
+	db.todo.findAll({
+		where
+	}).then(function(todos) {
+		if (!!todos) {
+			res.json(todos);
+		} else {
+			res.status(404).send();
+		}
+	}).catch(function(e) {
+		res.status(500).send(e);
+	});
+
+
+	// var filteredTodos = todos;
+
+	// if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
+	// 	filteredTodos = _.where(filteredTodos, {
+	// 		completed: true
+	// 	});
+	// } else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
+	// 	filteredTodos = _.where(filteredTodos, {
+	// 		completed: false
+	// 	});
+	// }
+
+	// if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
+	// 	filteredTodos = _.filter(filteredTodos, function(obj) {
+	// 		return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) >= 0;
+	// 	});
+	// }
+
+	// // convert to JSON and send back to who called it
+	// res.json(filteredTodos);
 });
 
 // get todo
 app.get('/todos/:id', function(req, res) {
 	// params in urls are returned as "strings"
 	var todoId = parseInt(req.params.id, 10);
-	db.todo.findById(todoId).then(function (todo) {
+	db.todo.findById(todoId).then(function(todo) {
 		if (!!todo) {
 			res.json(todo.toJSON());
 		} else {
 			res.status(404).send();
 		}
-	}).catch(function (e) {
+	}).catch(function(e) {
 		res.status(500).send(e);
 	});
 
@@ -74,9 +101,9 @@ app.get('/todos/:id', function(req, res) {
 app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
-	db.todo.create(body).then(function (todo) {
+	db.todo.create(body).then(function(todo) {
 		res.json(todo.toJSON());
-	}).catch(function (e) {
+	}).catch(function(e) {
 		res.status(400).json(e);
 	});
 
