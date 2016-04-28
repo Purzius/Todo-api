@@ -14,23 +14,27 @@ var todoNextId = 1;
 
 app.use(bodyParser.json());
 
-app.get('/', function (req, res) {
+app.get('/', function(req, res) {
 	res.send('Todo API Root');
 });
 
 // get todos?complated=bool&q=description
-app.get('/todos', function (req, res) {
+app.get('/todos', function(req, res) {
 	var queryParams = req.query;
 	var filteredTodos = todos;
 
 	if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'true') {
-		filteredTodos = _.where(filteredTodos, {completed: true});
+		filteredTodos = _.where(filteredTodos, {
+			completed: true
+		});
 	} else if (queryParams.hasOwnProperty('completed') && queryParams.completed === 'false') {
-		filteredTodos = _.where(filteredTodos, {completed: false});
+		filteredTodos = _.where(filteredTodos, {
+			completed: false
+		});
 	}
 
 	if (queryParams.hasOwnProperty('q') && queryParams.q.length > 0) {
-		filteredTodos = _.filter(filteredTodos, function (obj) {
+		filteredTodos = _.filter(filteredTodos, function(obj) {
 			return obj.description.toLowerCase().indexOf(queryParams.q.toLowerCase()) >= 0;
 		});
 	}
@@ -40,20 +44,22 @@ app.get('/todos', function (req, res) {
 });
 
 // get todo
-app.get('/todos/:id', function (req, res) {
+app.get('/todos/:id', function(req, res) {
 	// params in urls are returned as "strings"
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
+	var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});
 
 	if (matchedTodo) {
 		res.json(matchedTodo);
 	} else {
 		res.status(404).send();
-	}	
+	}
 });
 
 // POST
-app.post('/todos', function (req, res) {
+app.post('/todos', function(req, res) {
 	var body = _.pick(req.body, 'description', 'completed');
 
 	if (!_.isBoolean(body.completed) || !_.isString(body.description) || body.description.trim().length === 0) {
@@ -70,22 +76,28 @@ app.post('/todos', function (req, res) {
 });
 
 // DELETE
-app.delete('/todos/:id', function (req, res) {
+app.delete('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
+	var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});
 
 	if (matchedTodo) {
 		todos = _.without(todos, matchedTodo);
 		res.json(matchedTodo);
 	} else {
-		res.status(404).json({"error": "No todo found with that id"});
+		res.status(404).json({
+			"error": "No todo found with that id"
+		});
 	}
 });
 
 // PUT
-app.put('/todos/:id', function (req, res) {
+app.put('/todos/:id', function(req, res) {
 	var todoId = parseInt(req.params.id, 10);
-	var matchedTodo = _.findWhere(todos, {id: todoId});
+	var matchedTodo = _.findWhere(todos, {
+		id: todoId
+	});
 	var body = _.pick(req.body, 'description', 'completed');
 	var validAttributes = {};
 
@@ -113,6 +125,6 @@ app.put('/todos/:id', function (req, res) {
 });
 
 
-app.listen(PORT, function () {
+app.listen(PORT, function() {
 	console.log('Listening on port ' + PORT + '!');
 });
